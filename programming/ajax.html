@@ -1,0 +1,68 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <script>
+        var xmlHttp; // 辑滚客狼 烹脚 按眉
+
+        /* IE, 弊 寇 宏扼快历 魄窜 饶 xmlHttp 檬扁拳 */
+        function createXMLHttpRequest() {
+            
+                xmlHttp = new XMLHttpRequest();
+           
+        }
+
+        function send() {
+            createXMLHttpRequest(); // 檬扁拳
+            var url = "https://www.googleapis.com/youtube/v3/search?part=snippet&key=AIzaSyA0Lu3dJF95NsREfTczQJesUGStdduSVhM&maxResults=10&q=크레마&type=video";
+            // 烹脚 惑怕俊 蝶扼 悼累瞪 callback 窃荐 瘤沥
+            xmlHttp.onreadystatechange = callback;
+
+            // http皋家靛, 夸没林家, 厚悼扁/悼扁 咯何
+            xmlHttp.open("GET", url, true);
+
+            // POST 烹脚 矫 颇扼固磐 瘤沥
+            // GET 烹脚 矫 null
+            xmlHttp.send(null);
+        }
+
+        function callback() {
+            
+            if (xmlHttp.readyState == 4) {
+
+                
+                if (xmlHttp.status == 200) {
+                    temp = xmlHttp.responseText;
+                    // alert(temp);
+                    obj= JSON.parse(temp);
+                    // alert(obj.id +"//"+obj.pw);
+                    var items= obj.items;
+                    var code = "";
+                    for (var i =0; i<items.length; i++){
+                        var item = items[i]
+                        var snippet = item.snippet;
+                        var title = snippet.title;
+                        var thumbnails = snippet.thumbnails;
+                        var default2 = thumbnails.default;
+                        var url = default2.url;
+                        var videoId = item.id.videoId;
+                        code += "<div>";
+                        code += '<img src="'+url+'">'
+                        code += '<a href="http://youtube.com/watch?v='+videoId+'">'+title+'</a>'
+                        code +="</div>";
+                        console.log(title, url,"http://youtube.com/watch?v="+videoId);
+                    }
+                    document.querySelector('#list').innerHTML =code;
+                }
+            }
+        }    
+    </script>
+</head>
+
+<body onload="send()">
+    <input type="button" value="전송" onclick="send()">
+    <div id="list"></div>
+</body>
+
+</html>
