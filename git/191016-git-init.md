@@ -11,3 +11,13 @@
 
 ## TODO
 modify what I upload
+
+
+
+
+
+#### 올리는 방법
+
+1. git add
+2. git commit
+3. git push origin master
