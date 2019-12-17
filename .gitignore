@@ -1,3 +1,14 @@
+git_img.PNG
+
+# ignore DS_Store on MacOs
+.DS_Store
+
+#some files and directorys to be ignored
+hidden/
+*.java
+keystore.*
+
+#
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
