@@ -24,3 +24,9 @@
 - git push : commit 한 내용 원격저장소에 보내기
 - git clone `repo주소`: repository를 복제
 - git pull `[원격저장소 이름]``[현재 branch]`: 업데이트된 원격저장소 로컬에 가져오기
+
+
+
+#### [참고] : 폴더명 변경, 파일의 위치 이동시 
+
+- git add -u를 하면 renamed 된 파일까지 add가 가능하다
