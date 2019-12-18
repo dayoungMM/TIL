@@ -67,8 +67,3 @@ $ git pull origin master
    - 양쪽 branch 에 commit들이 쌓여있고, conflict가 발생하는 경우
    - 동일 파일 내에 상충하는 내용이 있을 경우
 
-
-
-
-
-### 

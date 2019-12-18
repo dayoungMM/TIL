@@ -35,12 +35,7 @@
 - git reset reset [되돌아가고싶은 상태의 log 번호] : 과거로 rollback (되도록 사용하지 말자)
 - git rm --cached [파일명] :add 한것 삭제
 
-
-
-
-
-#### [참고] : 폴더명 변경, 파일의 위치 이동시 
-
+[참고] : 폴더명 변경, 파일의 위치 이동시 
 - git add -u를 하면 renamed 된 파일까지 add가 가능하다
 
 
