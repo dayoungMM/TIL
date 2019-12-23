@@ -7,6 +7,8 @@
 - cp : 파일 복사
 - rm :파일 삭제
 - rm -r :폴더 지우기
+- history : 역대 작성한 명령어 출력
+- history |grep cd  : cd가 들어가있는 history 출력
 
 
 
