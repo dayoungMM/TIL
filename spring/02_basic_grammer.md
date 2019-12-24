@@ -60,8 +60,8 @@ ctrl+shift+F :자동 줄맞춤
 @Controller
 public class HtmlController {
 	@GetMapping("html/string")
-	public String html() {
-		return "html/string";
+	public String html() {  //return 값이 string
+		return "html/string"; //templates/html.string
 	}
 
 	@GetMapping("html/void")
@@ -120,9 +120,9 @@ public class HtmlController {
 ```java
 @Controller
 public class HtmlController {
-	@GetMapping("html/string")
-	public String html() {
-		return "html/string";
+	@GetMapping("html/string") 
+	public String html() { 
+		return "html/string"; 
 	}
 
 	@GetMapping("html/void")
@@ -175,7 +175,7 @@ public class HtmlController {
 - JSON : map,array,list,object
   - 데이터만 서버에서 가져오는 경우 JSON형식으로 가져오는것이 일반적이다
   - JSON을 html에서 제공해주려면 parser가 필요하다
-  - json으로 응답해주는것은 @responseBody  
+  - controller에서 json 데이터를 주고받기 위해서는 @responseBody 가 필요하다
 - Responsebody 자동으로 붙여주는 controller: @RestController
 
 ![image-20191223142643784](02_basic_grammer.assets/image-20191223142643784.png)
@@ -242,7 +242,7 @@ public class MethodController {
 1. RequestParam(편리함)
 
 - 파라미터의 종류 갯수와 상관없이 요청 처리 
-- 파라미터 명칭에 맞게 변수 사용
+- 파라미터 명칭에 맞게 변수 사용 (컨트롤러 메소드의 인자명과 동일)
 - 보안 약함
 - ex1) key1, key2 정확하게 파라미터 받기
 
@@ -255,12 +255,14 @@ public class MethodController {
 2. ModelAttribute(명확함)
 
 * Model에 작성되어 있는 변수/자료형과 파라미터명이 동일하면 자동으로 대입
+* 모델 클래스의 변수명과 동일
 
 - Model/DTO/VO 등 객체와 연계하여 활용
 - 깐깐한 조건을 다 만족해야 request 처리
 - JPA, MyBatis 등 ORM 프레임워크 활용
+- 개발자 입장에서 controller에서 key에게 바로 key를 셋팅할 수 있는 RequestParam와는 다르게, ModelAttribute는 class를 만들어 key를 관리하기 때문에 한번 더 생각하고, 확인하고,getter setter를 통해 key를 private하게 관리할 수 있다.
 
-
+![image-20191224100801040](02_basic_grammer.assets/image-20191224100801040.png)
 
 3. HttpServletRequest - 가장 전통적으로 사용되는 방식
 4.  @PathVariable -  요청을 처리하는 주소에 {변수명} 형식으로 지정
@@ -517,32 +519,32 @@ html작업 넘길 때 단서를 줘서 특정하게 동작하도록 하는 기�
 ### Thymeleaf ) 하이퍼링크 설정하기
 
 ```java
- @GetMapping("linkUrl")
- public String linkUrl(Model model, @RequestParam(defaultValue="1") int page) {
- int startPage = (page - 1) / 10 * 10 + 1;
- int endPage = startPage + 9;
- model.addAttribute("startPage", startPage);
- model.addAttribute("endPage", endPage);
- model.addAttribute("page", page);
- return "linkUrl";
- }
+	@GetMapping("/linkUrl")
+	public String linkUrl(
+//			@RequestParam int start,
+//			@RequestParam int end,
+			@RequestParam (defaultValue="1") int now_page,
+			Model model) {
+		int start = (now_page-1)/10*10+1;
+		int end = start + 9;
+		model.addAttribute("start",start);
+		model.addAttribute("end",end);
+		model.addAttribute("now_page",now_page);
+		return "linkUrl";
+	}
+
 ```
 
 
 
 ```html
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<title>Insert title here</title>
-</head>
 <body>
-<th:block th:each="pageNumber : ${#numbers.sequence(1, 10)}">
-<a th:href="@{/linkUrl(page=${pageNumber})}" th:text="${pageNumber}"></a>
-</th:block>
+	<th:block th:each="page : ${#numbers.sequence(start,end)}">
+		<span th:if = "${now_page==page}" th:text = "${page}"></span>
+		<a href="#" th:unless="${now_page==page}">[[${page}]]</a>
+	
+	</th:block>
 </body>
-</html>
 ```
 
 
