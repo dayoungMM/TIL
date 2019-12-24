@@ -157,7 +157,7 @@ public class HtmlController {
 }
 ```
 
-object 는 member에서 데이터를 가져온다
+>  object page는 Member.html 파일을 열어서 보여주는데, Member에 직접 데이터를 setting 해서 보내준다
 
 
 
