@@ -355,6 +355,14 @@ spring.jpa.show-sql=true
 
 -  https://h2database.com/html/main.html
   - 다운로드
+- H2 Database란?
+
+> 자바로 작성된 관계형 데이터 베이스 관리 시스템.
+>
+> 서버모드와 임베디드 모드의 인메모리 DB기능을 지원.
+>
+> 브라우저 기반의 콘솔모드를 이용할 수 있으며, 별도의 설치과정이 없고 저용량이라 가볍고 빠른것이 특징.
+
 - ![image-20191224172637148](03_.assets/image-20191224172637148.png)
 
 
@@ -387,11 +395,21 @@ public class Product {
 }
 ```
 
-> rpository
+* 메모리에 등록하는 어노테이션. 불리어질 대상 (Autowired로 연결하여 spring이 자동으로 제어하게 한다)
+  * @Controller
+  * @Service
+  * @Repository
+  * @Component
+
+> repository
 >
 > > 실제로 db를 관리하는 곳
 > >
+> > 메모리에 등록해주는 역할
+> >
 > > interface : 상속받음
+> >
+> > > Product라는 table 대상, Long이라는 id
 
 ```java
 @Repository
@@ -415,7 +433,7 @@ return list;
 }
 @PostMapping("/jpa/product")
 public String productPost(@ModelAttribute Product product) {
-productRepository.save(product); //save 알아서 매소드 호출(삽입)
+productRepository.save(product); //save 알아서 매소드 호출(삽입).매소드가 실행후 product에 반환
 return "redirect:/jpa/product";
 }
 }
@@ -437,5 +455,508 @@ return "redirect:/jpa/product";
 SELECT * FROM PRODUCT
 ```
 
+### <br>
+
+<br>
 
 
+
+### SQL구문 대신 Spring repository에서 Java구문으로 데이터 필터링하기
+
+
+
+
+<img src="03_AOP_filter_interceptor_JPA.assets/image-20191226090936880.png" alt="image-20191226090936880" style="zoom:67%;" />/
+
+<img src="03_AOP_filter_interceptor_JPA.assets/image-20191226090918235.png" alt="image-20191226090918235" style="zoom:67%;" />
+
+##### 이름이 kim인 사람만 테이블에서 불러오기
+> Controller
+>
+> > 단 Product 하나만을 불러오기 때문에 name은 중복되지 않는 고유한 값이어야 한다
+> >
+> > > 중복되는 값을 key값으로써 불러오기 위해서는 1) List형식으로 불러오거나 2) 예외처리를 해야한다
+```java
+	@GetMapping("/jpa/product2")
+	public Product product2(String name) {
+		Product list = productRepository.findByName(name);
+		return list;
+	}
+```
+
+> Repository
+
+```java
+@Repository
+public interface ProductRepository extends JpaRepository<Product, Long> {
+	public Product findByName(String name);
+}
+```
+
+> webpage
+
+<img src="03_AOP_filter_interceptor_JPA.assets/image-20191226093800010.png" alt="image-20191226093800010" style="zoom:60%;" />
+
+###### <br>
+
+###### 중복되는 값을 key값으로써 불러오기 위해 List형식으로 불러오기
+
+> Controller
+
+```java
+@GetMapping("/jpa/product2")
+	public List<Product> product2(String name) {
+		List<Product> list = productRepository.findByName(name);
+		return list;
+	}
+```
+
+> Repository
+
+```java
+@Repository
+public interface ProductRepository extends JpaRepository<Product, Long> {
+	public List<Product> findByName(String name);
+}
+```
+
+> web
+
+<img src="03_AOP_filter_interceptor_JPA.assets/image-20191226093714526.png" alt="image-20191226093714526" style="zoom:60%;" />
+
+<br><br>
+
+#### H2를 서버에서 실행하기
+
+- embeded 모드 : 로컬에서만 접속가능
+- sever 모드: 어떤 장치에서든 접속 가능
+
+> h2설정변경
+
+<img src="03_AOP_filter_interceptor_JPA.assets/image-20191226094320639.png" alt="image-20191226094320639" style="zoom:50%;" />
+
+> application.properties
+
+```java
+# h2 server mode
+spring.datasource.url=jdbc:h2:tcp://localhost/~/test
+```
+
+
+
+<br>
+
+### 파일 업로드 페이지
+
+1. MultipartHttpServletRequest 이용하기
+
+> controller/UploadController (오리지널 파일 이름 확인하기)
+
+```java
+@Controller
+public class UploadController {
+@GetMapping("/upload1") //파일 업로드 화면은 get
+public String upload1() {
+return "upload1";
+}
+@PostMapping("/upload1") //파일 업로드 submit시에는 post방식으로 접근(파일명 확인. 저장X)
+@ResponseBody
+public String upload1Post(MultipartHttpServletRequest mRequest) {
+String result = "";
+MultipartFile mFile = mRequest.getFile("file");  //html의 name으로 파일(mutipartfile) 확인
+String oName = mFile.getOriginalFilename();
+result += oName + "\n";
+return result;
+}
+}
+```
+
+> controller/UploadController (업로드한 파일들 저장하기)
+
+```java
+@Controller
+public class UploadController {
+	@GetMapping("/upload1")
+	public String upload1() {
+		return "upload1";
+	}
+
+	@PostMapping("/upload1")
+	@ResponseBody
+	public String upload1Post(MultipartHttpServletRequest mRequest) {
+		String result = "";
+		// 여러개의 파일을 담는 list 형식. 반복문이 가능하다
+		List<MultipartFile> mFiles = mRequest.getFiles("file");
+		for (int i = 0; i < mFiles.size(); i++) {
+			
+			// 업로드된 파일 정보
+			MultipartFile mFile = mFiles.get(i);
+			// original 파일명을 알아내기
+			String oName = mFile.getOriginalFilename();
+			// 지정 경로에 지정 파일명으로 저장(original 파일명으로)
+			try {
+				mFile.transferTo(new File("c:/dev/" + oName));
+			} catch (IllegalStateException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			result += oName + "\n";
+		}
+		return result;
+	}
+```
+
+
+
+> templates/upload1. html
+
+```html
+<meta charset="utf-8">
+<form method="post" enctype="multipart/form-data">
+ <input type="file" name="file" multiple><br>
+ <input type="submit" value="업로드">
+</form>
+```
+> application.properties
+```java
+# file upload
+spring.servlet.multipart.max-file-size=2097152  //파일 1개의 용량 제한
+spring.servlet.multipart.max-request-size=2097152 //한번의 업로드(request)당 용량 제한
+```
+
+
+
+2. RequestParam으로 받기
+
+> controller
+
+```java
+@GetMapping("/upload2")
+public String upload2() {
+return "upload2";
+}
+@PostMapping("/upload2")
+@ResponseBody
+public String upload2Post(@RequestParam("file") MultipartFile mFile) {
+String result = "";
+String oName = mFile.getOriginalFilename();
+result += oName + "\n";
+return result;
+}
+```
+
+> templates
+
+ ```html
+<meta charset="utf-8">
+<form method="post" enctype="multipart/form-data">
+ <input type="file" name="file" multiple><br>
+ <input type="submit" value="업로드">
+</form>
+ ```
+
+3. ModelAttribute로 받기
+
+> Controller
+
+```java
+@GetMapping("/upload3")
+public String upload3() {
+return "upload3";
+}
+@PostMapping("/upload3")
+@ResponseBody
+public String upload3Post(@ModelAttribute FileInfo info) {
+String result = "";
+String oName = info.getFile().getOriginalFilename();
+result += oName + "\n";
+return result;
+}
+
+```
+
+> model
+
+```java
+package com.ggoreb.basic.model;
+import org.springframework.web.multipart.MultipartFile;
+import lombok.Data;
+@Data
+public class FileInfo {
+private MultipartFile file;
+}
+```
+
+> templates
+
+```html
+<meta charset="utf-8">
+<form method="post" enctype="multipart/form-data">
+ <input type="file" name="file" multiple><br>
+ <input type="submit" value="업로드">
+</form>
+```
+
+
+
+<br><br>
+
+### 파일 다운로드
+
+> controller
+
+```java
+@Controller
+public class DownloadController {
+	@GetMapping("/download")
+	public ResponseEntity<Resource> download() throws Exception {
+		File file = new File("C:/Users/mdyo_/Pictures/question/vector.PNG");
+		InputStreamResource resource = new InputStreamResource(new FileInputStream(file));
+		return ResponseEntity.ok()
+				.header("content-disposition", "filename=" + URLEncoder.encode(file.getName(), "utf-8"))
+				
+				.contentLength(file.length())
+                  //브라우저에 보여주는 이미지타입으로 인식하게 하기
+                //.contentType(MediaType.parseMediaType("image/png"))
+				  // 다운로드 받아야할 파일로 인식하게 하기		           
+                .contentType(MediaType.parseMediaType("application/octet-stream"))
+				.body(resource);
+	}
+}
+```
+
+> Mime-type
+>
+> 파일을 어떻게 인식할지 파일타입을 정하는 것
+>
+> > ("image/png")) : /브라우저에 보여주는 이미지타입으로 인식
+> >
+> > ("application/octet-stream")):다운로드 받아야할 파일로 인식(모든파일)
+> >
+> > ("text/html"): html 파일 브라우저에서 실행했을때의 타입으로 인식
+> >
+> > ("text/plain"): 텍스트파일 문자를 그대로 보여주도록 인식
+
+
+
+
+
+### RestTemplate
+
+> HTTP 통신에 유용하게 사용할 수 있는 라이브러리
+>
+> 기계적이고 반복적인 코드를 최대한 줄여줌
+>
+>  JSON / XML 형식의 응답결과에 대해 처리 지원
+
+주요메소드
+
+<img src="03_AOP_filter_interceptor_JPA.assets/image-20191226124441427.png" alt="image-20191226124441427" style="zoom:67%;" />
+
+
+
+### STS(Spring Tool Suite)에서 import 하는법
+
+
+
+1. General
+
+   - Existing Project 
+
+     >  프로젝트가 완성이 되어있는경우
+
+2. Git
+
+   - Projects from git 
+
+     >  Github에서 clone할때(불완전)
+
+3. Gradle
+
+   - 프로젝트 파일이 불완전할때 파일을 보충하면서 import
+
+<br><br>
+
+### 카카오지도 API에서 위도 경도 정보 가져와서  브라우저 console에 출력
+
+> controller1
+
+```java
+@GetMapping("/getKakao")
+	public ResponseEntity<Map> getKakao(
+			@RequestParam("address") String address) { //RequestParam으로 변수 받기
+		RestTemplate rt = new RestTemplate();
+		RequestEntity requestEntity = null;
+		try {
+			requestEntity = RequestEntity
+					.get(new URI("https://dapi.kakao.com/v2/local/search/address.json?query="
+							+ URLEncoder.encode(address, "utf-8")))
+					.header("Authorization", "KakaoAK <인증키>").build();
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		} catch (URISyntaxException e) {
+			e.printStackTrace();
+		}
+		ResponseEntity<Map> entity = rt.exchange(requestEntity, Map.class);
+		return entity;
+	}
+```
+
+> controller 2
+
+```java
+@Controller
+public class serviceController {
+	@GetMapping("/kakao")
+	public String kakao() {
+		return "kakao";
+	}
+```
+
+> html
+
+```html
+<meta charset="UTF-8">
+<input type="text" id="address">
+<button>위도/경도 변환</button>
+<hr>
+<!--  자바스크립트(jQuery) AJAX활용 -->
+<script src="http://code.jquery.com/jquery-3.1.1.min.js"></script>
+<!--  getKakao 주소를 호출 -->
+<!--  parsing 후 화면에 출력 -->
+<script>
+	$('button').click(function(){
+		$.ajax({
+			url : '/getKakao',
+			type : 'get',
+			data : {'address': $('#address').val()},
+			success: function(res){
+				console.log(res);
+			}
+		})
+	});
+
+</script>
+```
+
+
+
+<br>
+
+### PAPAGO API를 이용해서 번역한 문장 json파일로 웹에서 보여주기
+
+```java
+@GetMapping("/getNaver")
+	 public ResponseEntity<Map> getNaver(
+			 @RequestParam("translate") String translate) {
+	 RestTemplate rt = new RestTemplate();
+	 RequestEntity<Map<String, String>> requestEntity = null;
+	 try {
+	 Map<String, String> body = new HashMap<>();
+	 body.put("source", "ko");
+	 body.put("target", "en");
+	 body.put("text", translate);
+	 requestEntity = RequestEntity.post(
+	 new URI("https://openapi.naver.com/v1/papago/n2mt"))
+	 .header("X-Naver-Client-Id", "<ID>")
+	 .header("X-Naver-Client-Secret", "<SECRET_KEY>")
+	 .body(body);
+	 } catch (URISyntaxException e) {
+	 e.printStackTrace();
+	 }
+	 ResponseEntity<Map> entity = rt.exchange(requestEntity, Map.class);
+	 return entity;
+}
+```
+
+> controller 2
+
+```java
+	@GetMapping("/papago")
+	public String papago() {
+		return "papago";
+	}
+```
+
+> html
+
+```html
+<meta charset="UTF-8">
+<input type="text" id="translate">
+<button>번역 실행</button>
+<hr>
+<!--  자바스크립트(jQuery) AJAX활용 -->
+<script src="http://code.jquery.com/jquery-3.1.1.min.js"></script>
+<!--  getNaver 주소를 호출 -->
+<!--  parsing 후 화면에 출력 -->
+<script>
+	$('button').click(function(){
+		$.ajax({
+			url : '/getNaver',
+			type : 'get',
+			data : {'translate': $('#translate').val()},
+			success: function(res){
+				console.log(res); //콘솔에 출력
+				document.write(res.message.result.translatedText); //화면에 출력
+			}
+		})
+	});
+
+</script>
+```
+
+<br>
+
+> html(번역한 문장 누적으로 계속 보여주기)
+
+```java
+<script>
+	$('button').click(function(){
+		$.ajax({
+			url : '/getNaver',
+			type : 'get',
+			data : {'translate': $('#translate').val()},
+			success: function(res){
+				console.log(res); 
+				var translatedText = res.message.result.translatedText;
+				var html = '<h1>'+ translatedText + '</h1>'
+				$('hr').after(html);
+			}
+		})
+	});
+</script>
+```
+
+> html(번역한 문장 누적으로 console에는 보여주지만 웹페이지에서는 최근 번역문장만 보여주기)
+
+```java
+<script>
+	$('button').click(function(){
+		$.ajax({
+			url : '/getNaver',
+			type : 'get',
+			data : {'translate': $('#translate').val()},
+			success: function(res){
+				$('h1').empty();
+				console.log(res);
+				var translatedText = res.message.result.translatedText;
+				var html = '<h1>'+ translatedText + '</h1>'
+				$('hr').after(html);
+				
+			}
+		})
+	});
+
+</script>
+```
+
+
+
+<br>
+
+### find 단축키
+
+- shift +ctrl +R
