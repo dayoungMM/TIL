@@ -14,3 +14,12 @@ else:
     from .unix_events import *  # pragma: no cover
     __all__ += unix_events.__all__
 ```
+
+
+
+# VSCode를 이용해 python 이용하기
+
+>  Extension에서 다음의 확장기능을 추가 설치
+
+- AREPL for python
+- Node.js Modules Intellisense
