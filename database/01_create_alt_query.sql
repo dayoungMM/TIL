@@ -1,0 +1,92 @@
+## 테이블 생성
+CREATE TABLE practice(
+	email VARCHAR(20),
+	pw VARCHAR(20),
+	age int
+);
+
+CREATE TABLE practice1(
+	email VARCHAR(20),
+	pw VARCHAR(20),
+	age INT,
+	PRIMARY KEY (email)
+);
+
+CREATE TABLE member(
+	num INT,
+	NAME VARCHAR(10),
+	age INT,
+	email VARCHAR(50),
+	phone VARCHAR(20),
+	PRIMARY KEY (num)
+);
+
+
+CREATE TABLE 부서 (
+ 부서번호 INT,
+ 부서이름 VARCHAR(10),
+ PRIMARY KEY(부서번호)
+);
+
+CREATE TABLE 사원 (
+ 사원번호 INT,
+ 사원이름 VARCHAR(10),
+ 소속부서 INT,
+ PRIMARY KEY(사원번호),
+ FOREIGN KEY(소속부서) REFERENCES 부서(부서번호)
+);
+
+### 테이블 수정 ALTER TABLE
+
+ALTER TABLE practice
+	ADD PRIMARY KEY (email);
+
+ALTER TABLE practice
+	ADD email_addr VARCHAR(20);	
+ALTER TABLE practice
+	ADD FOREIGN KEY (email_addr)
+	REFERENCES practice1(email);
+	
+### 연습문제
+CREATE TABLE EMP(
+	EMPNO INT,
+	ENAME VARCHAR(10),
+	JOB VARCHAR(9),
+	MGR INT, 
+	HIREDATE DATETIME,
+	SAL INT,
+	COMM INT,
+	DEPTNO TINYINT,
+	PRIMARY KEY(EMPNO)
+);
+
+CREATE TABLE DEPT(
+	DEPTNO TINYINT,
+	DNAME VARCHAR(14),
+	LOC VARCHAR(13),
+	PRIMARY KEY(DEPTNO)
+);
+
+ALTER TABLE EMP
+	ADD FOREIGN KEY (DEPTNO)
+	REFERENCES DEPT(DEPTNO);
+	
+### 삭제 및 수정
+ALTER TABLE member
+	DROP age;
+	
+ALTER TABLE member
+	MODIFY email VARCHAR(100);
+	
+### 연습문제
+#제약조건명  확인
+SELECT * FROM information_schema.TABLE_CONSTRAINTS;
+
+# 제약조건 삭제 및 재생성
+ALTER TABLE EMP
+	DROP foreign key emp_ibfk_1;
+	
+ALTER TABLE EMP
+	ADD CONSTRAINT FK_EMP_DEPT
+	FOREIGN KEY (DEPTNO) REFERENCES DEPT(DEPTNO)
+	ON DELETE CASCADE;
