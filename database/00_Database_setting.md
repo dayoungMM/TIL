@@ -49,3 +49,44 @@
 - 슈퍼키 (유일성)
 - 외래키(다른 릴레이션의 기본키)
 
+
+
+### HeidiSQL에서 한글 깨지는것 해결하기
+
+> 확인 (문자 형태)
+
+```
+SHOW VARIABLES LIKE 'c%';
+```
+
+
+
+> 쿼리 내에서 해결하기
+
+```mariadb
+SELECT * FROM noodle;
+ SELECT company, 
+ 	convert(concat(COUNT(*),'개') USING UTF8) AS "COUNT",
+ 	CAST(concat(COUNT(*),'개') AS VARCHAR(20)) AS "CNT"
+ FROM noodle
+ group by company;
+```
+
+
+
+> 환경파일 수정
+>
+> > C:\ProgramData\Microsoft\Windows\Start Menu\Programs\MariaDB 10.4 (x64)\my.ini
+
+```
+[mysqld]
+datadir=C:/Program Files/MariaDB 10.4/data
+port=3306
+innodb_buffer_pool_size=1515M
+character-set-server=utf8
+[client]
+port=3306
+plugin-dir=C:/Program Files/MariaDB 10.4/lib/plugin
+default-character-set = utf8
+```
+
