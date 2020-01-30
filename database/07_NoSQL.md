@@ -78,8 +78,8 @@ NoSQL 종류
 
 ### 실행
 
-- mongod
-- mongod --port [포트번호] --dbpath[데이터경로]  
+- mongo
+- mongo --port [포트번호] --dbpath[데이터경로]  
 
 ![image-20200128152128374](07_NoSQL.assets/image-20200128152128374.png)
 
@@ -110,7 +110,163 @@ db에 데이터 저장
 
 > or 조건
 
+`$gt → >, $lt → <, $gte → >=, $lte → <=, $ne → !=`
+
 - a가 5이거나 99인것
 
 ![image-20200128154237008](07_NoSQL.assets/image-20200128154237008.png)
+
+> 제외 : $nin, 포함: $in
+
+![image-20200128160718206](07_NoSQL.assets/image-20200128160718206.png)
+
+> 필드 존재 유무 확인
+
+![image-20200128161304884](07_NoSQL.assets/image-20200128161304884.png)
+
+> 필드 선택(0:해제, 1:선택)
+
+- 기본키 _id 는 디폴트 값이 1, 아래와 같이 0으로 지정해줘야 나오지 않는다
+
+![image-20200128161341737](07_NoSQL.assets/image-20200128161341737.png)
+
+> 데이터 조회 / 조회할 필드 선택 ( a가 2보다 적은 문서의 a 필드 조회 )
+
+![image-20200128161541397](07_NoSQL.assets/image-20200128161541397.png)
+
+> 데이터 수정
+>
+> > update: 덮어쓰기 
+> >
+> > set: 기존 데이터에 없으면 추가, 있으면 덮어쓰기
+> >
+> > unset: 데이터 삭제 (데이터 자체 통째로 삭제)
+> >
+> > pull : 대괄호를 가지고 있는 경우 일부만 삭제
+> >
+> > remove: 모든 데이터(테이블, row) 삭제
+> >
+> > drop: 컬렉션 삭제
+
+```cmd
+db.users.save( { name : 'Johnny', lang : [ 'ruby', 'c' ] } )
+db.users.save( { name : 'Sue', lang : [ 'python', 'java' ] } )
+db.users.update( { name : 'Johnny' }, { name : 'Cash', lang : ['english'] } )
+db.users.update( { name : 'Cash'}, { $set : { age : 50 } } 
+```
+
+
+
+![image-20200128162235078](07_NoSQL.assets/image-20200128162235078.png)
+
+```cmd
+ db.users.update({name:'Cash'},{$unset: {age:50}})
+```
+
+![image-20200128162449424](07_NoSQL.assets/image-20200128162449424.png)
+
+```cmd
+db.users.update( { name : 'Sue' }, { $pull : { lang : 'java' } } )
+db.users.update( { name : 'Sue' }, { $push : { lang : 'javascript' } } )
+```
+
+![image-20200128162840905](07_NoSQL.assets/image-20200128162840905.png)
+
+```
+db.users.remove( { name : 'Sue' })
+db.users.remove( { } )
+db.users.drop()
+```
+
+![image-20200128163133326](07_NoSQL.assets/image-20200128163133326.png)
+
+<br>
+
+<br>
+
+## 연습문제
+
+```
+ MongoDB CRUD – 연습문제
+ ● prod collection 사용
+ ● 100개의 제품 정보를 document에 저장
+ - for 반복문 사용
+ - 제품정보 필드 : name / price / count
+ ㆍname : name-1 ~ name-100
+ ㆍprice : 1001 ~ 1100
+ ㆍcount : 10 ~ 1000
+ ex) {name : 'name-1', price : 1001, count : 10}, …,
+ …, {name : 'name-100', price : 1100, count : 1000}
+ ● price가 1010원 보다 크거나 같고 1020원 보다 적거나 같은 제품
+ 또는 price가 1070원 보다 크고 1100원 보다 적은 제품 조회
+```
+
+```shell
+use test
+
+for (var i=1; i<=100; i++){db.prod.save({name:'name-'+i, price: 1000+i, count:10*i})};
+
+ db.prod.find({$or : [{price:{$gte:1010, $lte:1020}},{price:{$gt:1070, $lt:1100}}]})
+ 
+ 
+ db.prod.find({$or : [{price:{$gte:1010, $lte:1020}},{price:{$gt:1070, $lt:1100}}]},{_id:0, price:1})
+ 
+ 
+ db.prod.find({$or : [{price:{$gte:1010, $lte:1020}},{price:{$gt:1070, $lt:1100}}]},{_id:0, price:1}).limit(3)
+```
+
+
+
+<br>
+
+> index
+>
+> > 확인: getIndexes()
+> >
+> > 생성 (1:오름차순, -1:내림차순) :ensureIndex({name: 1})
+> >
+> > Index 생성 ( unique : 중복 데이터 저장 불가 )
+> >
+> > Index 삭제 ( 모든 인덱스 삭제 시 dropIndexes() )
+
+```nosql
+for (var i = 0; i < 100000; i++) {
+ db.users.save(
+ {
+ i : i,
+ username : 'user' + i,
+ age : Math.floor(Math.random() * 100),
+ created : new Date()
+ }
+ )
+}	
+
+```
+
+시간확인
+```
+db.users.find( { username : 'user1' } ).explain('executionStats')
+```
+- "executionTimeMillis" : 110,
+
+인덱스 적용 및 시간확인
+
+```
+db.users.ensureIndex( { username : 1 } )
+
+db.users.find( { username : 'user1' } ).explain('executionStats')
+
+
+```
+
+- "executionTimeMillis" : 0,
+
+
+
+
+### pymongo
+
+![image-20200128170837571](07_NoSQL.assets/image-20200128170837571.png)
+
+![image-20200128170850947](../python/MultiCampus/image-20200128170850947.png)
 
