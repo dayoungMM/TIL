@@ -219,7 +219,26 @@ admin.site.register(Curriculum)
 
 ### 템플릿 활용
 
-> ㄴㄴ
+>  show.htm
+
+```
+<body>
+	show 페이지<br>
+ 	{{ list }}<br>
+ 	{% for item in list %}
+ 	<h3>{{item.id}} / {{item.name}}</h3>
+ 	{% endfor %}
+</body>
+```
+
+>  firstapp/views.py
+
+```
+from django.shortcuts import render
+def show(request):
+ 	return render(request, 'firstapp/show.html', {})
+ 
+```
 
 
 
@@ -227,6 +246,7 @@ admin.site.register(Curriculum)
 
 1. django의 모델 기능을 활용하지 않고 pymysql 모듈을 활용
 2. django의 모델 기능을 활용하는데 기존 테이블명과 컬럼명을 수정
+   - 기존의 shop 테이블을 장고에서 생성한것처럼 만듦
 3. django의 모델 기능을 활용하는데 기존 데이터를 새로 생성된 모델로 이관(migration)
 4. 기존 db를 manage.py를 이용하여 models.py 생성
 
@@ -235,6 +255,152 @@ settings 에서
 
 python manage.py inspectdb shop>models.py
 ```
+
+
+
+#### 2번으로 하기
+
+> models.py
+
+```python
+class shop(models.Model):
+    shop_id = models.IntegerField(max_length=100)
+    shop_name = models.CharField(max_length=255)
+    shop_desc = models.CharField(max_length=255)
+    rest_date = models.CharField(max_length=255)
+    parking_info = models.CharField(max_length=255)
+    img_path = models.CharField(max_length=255)
+```
+
+
+
+> terminal
+
+```
+$ python manage.py makemigrations
+```
+
+<br><br>
+
+### 외래키 활용하기
+
+> models.py
+
+```python
+from django.db import models
+
+class Question(models.Model):
+    question_text = models.CharField(max_length=200)
+    pub_date = models.DateTimeField('date published')
+class Choice(models.Model):
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    choice_text = models.CharField(max_length=200)
+    votes = models.IntegerField(default=0)
+
+```
+
+
+
+
+
+### Shell 사용하기
+
+- 데이터베이스 관련 API 테스트
+- ORM의 특징: 조회한번해도 계속 연결되어있음. 수정하면 DB도 수정
+
+> terminal
+
+```
+ $ python manage.py shell
+```
+
+
+
+![image-20200131110402485](10_Django.assets/image-20200131110402485.png)
+
+![image-20200131112526634](10_Django.assets/image-20200131112526634.png)
+
+
+
+> [클래스명]_set: 1대다 관계에서 사용
+
+![image-20200131112613308](10_Django.assets/image-20200131112613308.png)
+
+> 질문 다보기, 보기 다 보기
+
+![image-20200131112951665](10_Django.assets/image-20200131112951665.png)
+
+### 연습문제)  문제, 보기 데이터 입력해서 보여주기
+
+![image-20200131113212438](10_Django.assets/image-20200131113212438.png)
+
+<br><Br>
+
+### 관리자 페이지
+
+> http://localhost:8000/admin/
+
+> polls/admin.py
+
+```python
+from django.contrib import admin
+from .models import Question, Choice
+admin.site.register(Question)
+admin.site.register(Choice)
+
+```
+
+
+
+> models.py
+
+```
+class Choice(models.Model):
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    choice_text = models.CharField(max_length=200)
+    votes = models.IntegerField(default=0)
+
+    def __str__(self):
+        return self.question + self.choice_text + str(self.votes)
+
+
+```
+
+<br><Br>
+
+## REST 방식
+
+- ? 안쓰고 /로 파라미터 받아서 html로 출력
+
+> view.py
+
+```pyton
+def detail(request, question_id): # 질문 상세 페이지
+    return HttpResponse("You're looking at question %s." % question_id)
+def results(request, question_id): # 투표 결과 페이지
+    response = "You're looking at the results of question %s."
+    return HttpResponse(response % question_id)
+def vote(request, question_id): # 투표 페이지
+    return HttpResponse("You're voting on question %s." % question_id)
+```
+
+> polls.urls.py
+
+```python
+urlpatterns = [
+    path('', views.index, name='index'),
+    path('<int:question_id>/', views.detail, name='detail'),
+    path('<int:question_id>/results', views.results, name='results'),
+    path('<int:question_id>/vote', views.vote, name='vote'),
+]
+
+```
+
+---------------------------------
+
+Cross-site request forgery,
+
+: 사이트 간 요청 위조(또는 크로스 사이트 요청 위조)
 
 
 
