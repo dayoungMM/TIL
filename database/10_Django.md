@@ -404,3 +404,15 @@ Cross-site request forgery,
 
 
 
+<br><Br>
+
+### 모델
+
+-  모델은 app/models.py 내의 파이썬 클래스로 표현
+- django.db.models.Model 클래스를 상속 받아서 구현
+- 모델 클래스를 프로젝트에 반영하기 위해 app 추가(settings.py)
+- ![image-20200203104137542](10_Django.assets/image-20200203104137542.png)
+- ![image-20200203104202485](10_Django.assets/image-20200203104202485.png)
+
+
+
